@@ -220,13 +220,16 @@ function renderChart(chartKey, canvasId, type, data, options) {
       duration: 1800, // Cinematic slow 1.8s transition
       easing: 'easeInOutCubic'
     },
+    events: ['mousemove', 'mouseout', 'click', 'touchstart', 'touchmove'],
     interaction: {
       mode: 'nearest',
-      intersect: false
+      intersect: false,
+      axis: 'xy'
     },
     hover: {
       mode: 'nearest',
-      intersect: false
+      intersect: false,
+      axis: 'xy'
     },
     onHover: (evt, activeEls) => {
       canvas.style.cursor = (activeEls && activeEls.length > 0) ? 'pointer' : 'default';
@@ -238,27 +241,43 @@ function renderChart(chartKey, canvasId, type, data, options) {
       enabled: true,
       mode: 'nearest',
       intersect: false,
+      axis: 'xy',
       backgroundColor: 'rgba(15, 23, 42, 0.95)',
       titleColor: '#38bdf8',
-      titleFont: { size: 13, weight: '800' },
+      titleFont: { size: 14, weight: '800' },
       bodyColor: '#ffffff',
-      bodyFont: { size: 12, weight: '700' },
-      padding: 12,
+      bodyFont: { size: 13, weight: '700' },
+      padding: 14,
       cornerRadius: 10,
-      borderColor: 'rgba(56, 189, 248, 0.5)',
+      borderColor: 'rgba(56, 189, 248, 0.6)',
       borderWidth: 1.5,
       displayColors: true,
       callbacks: {
+        title: (tooltipItems) => {
+          if (!tooltipItems || !tooltipItems.length) return '';
+          const item = tooltipItems[0];
+          return item.label || item.dataset.label || '';
+        },
         label: (context) => {
-          let label = context.dataset.label || context.label || '';
-          if (label) label += ': ';
+          let datasetLabel = context.dataset.label || 'Tickets';
           let val = 0;
           if (context.parsed && context.parsed.y !== undefined && context.parsed.y !== null) val = context.parsed.y;
           else if (context.parsed && context.parsed.x !== undefined && context.parsed.x !== null) val = context.parsed.x;
           else if (context.parsed && context.parsed.r !== undefined && context.parsed.r !== null) val = context.parsed.r;
           else if (context.parsed && typeof context.parsed === 'number') val = context.parsed;
           else if (context.raw !== undefined) val = context.raw;
-          return `${label}${Number(val).toLocaleString()} Tickets`;
+
+          const numVal = Number(val) || 0;
+          let extra = '';
+          if (type === 'pie' || type === 'doughnut' || type === 'polarArea') {
+            let dataset = (context.dataset && Array.isArray(context.dataset.data)) ? context.dataset.data : [];
+            let total = dataset.reduce((a, b) => a + (Number(b) || 0), 0);
+            if (total > 0) {
+              const pct = Math.round((numVal / total) * 100);
+              extra = ` (${pct}% share)`;
+            }
+          }
+          return ` ${datasetLabel}: ${numVal.toLocaleString()} Tickets${extra}`;
         }
       }
     }
@@ -272,6 +291,7 @@ function renderChart(chartKey, canvasId, type, data, options) {
   if (charts[chartKey] && charts[chartKey].config.type === type) {
     charts[chartKey].data.labels = data.labels;
     charts[chartKey].data.datasets = data.datasets;
+    charts[chartKey].config.options = mergedOptions;
     charts[chartKey].options = mergedOptions;
     charts[chartKey].update();
     return;
