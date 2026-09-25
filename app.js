@@ -185,10 +185,17 @@ function updateKPIs() {
   document.getElementById('kpi-csat').innerText = avgCSAT.toFixed(2);
 }
 
-// Robust chart renderer keeping existing canvas element intact
+// Robust chart renderer keeping existing canvas element intact with 3D pop animations
 function renderChart(chartKey, canvasId, type, data, options) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
+
+  const box = canvas.parentElement;
+  if (box && box.classList) {
+    box.classList.remove('chart-pop-3d');
+    void box.offsetWidth; // Trigger reflow for keyframe restart
+    box.classList.add('chart-pop-3d');
+  }
 
   if (charts[chartKey]) {
     try {
@@ -199,7 +206,20 @@ function renderChart(chartKey, canvasId, type, data, options) {
     charts[chartKey] = null;
   }
 
-  charts[chartKey] = new Chart(canvas, { type, data, options });
+  // Inject 3D smooth transition animation default options
+  const defaultAnimOptions = {
+    animation: {
+      duration: 1050,
+      easing: 'easeInOutQuart'
+    }
+  };
+
+  const mergedOptions = Object.assign({}, defaultAnimOptions, options);
+  if (options && options.animation) {
+    mergedOptions.animation = Object.assign({}, defaultAnimOptions.animation, options.animation);
+  }
+
+  charts[chartKey] = new Chart(canvas, { type, data, options: mergedOptions });
 }
 
 // Helper for DataLabels on Cartesian Charts (Bar, Column, Line)
@@ -357,7 +377,9 @@ function updateCharts() {
       datasets: [{
         data: priorities.map(p => counts[p]),
         backgroundColor: priorities.map(p => prioColorMap[p] || '#f59e0b'),
-        borderWidth: 0
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 14
       }]
     }, {
       responsive: true,
@@ -414,7 +436,9 @@ function updateCharts() {
       datasets: [{
         data: services.map(s => counts[s]),
         backgroundColor: services.map(s => serviceColorMap[s] || '#2563eb'),
-        borderWidth: 0
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 14
       }]
     }, {
       responsive: true,
