@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telecommunications Executive Dashboard in Power BI</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Chart.js & DataLabels CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+</head>
+<body>
+
+  <!-- Full-Width Executive Dashboard Container -->
+  <div class="pbi-dashboard-container">
+
+    <!-- Header Banner -->
+    <header class="pbi-header-banner">
+      <h1>Telecommunications Dashboard in Power BI</h1>
+      <button class="reset-filter-btn" onclick="resetAllFilters()">🔄 Reset Filters</button>
+    </header>
+
+    <!-- Distinct Service Color Legend Bar -->
+    <div class="service-legend-bar">
+      <div class="legend-item"><span class="legend-dot broadband"></span> Broadband</div>
+      <div class="legend-item"><span class="legend-dot mobile"></span> Mobile</div>
+      <div class="legend-item"><span class="legend-dot tv"></span> TV</div>
+      <div class="legend-item"><span class="legend-dot landline"></span> Landline</div>
+    </div>
+
+    <!-- Top Slicers Bar -->
+    <section class="pbi-slicers-bar">
+      <div class="pbi-slicer">
+        <div class="pbi-slicer-header slicer-blue">Month Name</div>
+        <select id="slice-month" onchange="applyFilters()">
+          <option value="All">All</option>
+          <option value="Jan">Jan</option>
+          <option value="Feb">Feb</option>
+          <option value="Mar">Mar</option>
+          <option value="Apr">Apr</option>
+          <option value="May">May</option>
+          <option value="Jun">Jun</option>
+          <option value="Jul">Jul</option>
+          <option value="Aug">Aug</option>
+          <option value="Sep">Sep</option>
+          <option value="Oct">Oct</option>
+          <option value="Nov">Nov</option>
+          <option value="Dec">Dec</option>
+        </select>
+      </div>
+
+      <div class="pbi-slicer">
+        <div class="pbi-slicer-header slicer-green">Status</div>
+        <select id="slice-status" onchange="applyFilters()">
+          <option value="All">All</option>
+          <option value="Resolved">Resolved</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Escalated">Escalated</option>
+          <option value="SLA Breached">SLA Breached</option>
+        </select>
+      </div>
+
+      <div class="pbi-slicer">
+        <div class="pbi-slicer-header slicer-purple">Service Type</div>
+        <select id="slice-tech" onchange="applyFilters()">
+          <option value="All">All</option>
+          <option value="Broadband">Broadband</option>
+          <option value="Mobile">Mobile</option>
+          <option value="TV">TV</option>
+          <option value="Landline">Landline</option>
+        </select>
+      </div>
+
+      <div class="pbi-slicer">
+        <div class="pbi-slicer-header slicer-orange">Region</div>
+        <select id="slice-region" onchange="applyFilters()">
+          <option value="All">All</option>
+          <option value="North Zone">North Zone</option>
+          <option value="South Zone">South Zone</option>
+          <option value="East Zone">East Zone</option>
+          <option value="West Zone">West Zone</option>
+          <option value="Central Zone">Central Zone</option>
+        </select>
+      </div>
+
+      <div class="pbi-slicer">
+        <div class="pbi-slicer-header slicer-pink">Priority</div>
+        <select id="slice-priority" onchange="applyFilters()">
+          <option value="All">All</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+
+      <div class="pbi-slicer">
+        <div class="pbi-slicer-header slicer-cyan">Issue Type</div>
+        <select id="slice-issue" onchange="applyFilters()">
+          <option value="All">All</option>
+          <option value="Slow Internet">Slow Internet</option>
+          <option value="Installation Delay">Installation Delay</option>
+          <option value="No Signal">No Signal</option>
+          <option value="Billing Error">Billing Error</option>
+          <option value="Dropped Calls">Dropped Calls</option>
+          <option value="Service Outage">Service Outage</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- 4 Distinct Service-Colored KPI Cards -->
+    <section class="pbi-kpi-grid">
+      <div class="pbi-kpi-card broadband">
+        <div class="pbi-kpi-num" id="kpi-total">5,000</div>
+        <div class="pbi-kpi-label">Total Ticket</div>
+      </div>
+
+      <div class="pbi-kpi-card mobile">
+        <div class="pbi-kpi-num" id="kpi-resp">12.48</div>
+        <div class="pbi-kpi-label">Average Response Time (hrs)</div>
+      </div>
+
+      <div class="pbi-kpi-card tv">
+        <div class="pbi-kpi-num" id="kpi-resol">47.60</div>
+        <div class="pbi-kpi-label">Average Resolution Time (hrs)</div>
+      </div>
+
+      <div class="pbi-kpi-card landline">
+        <div class="pbi-kpi-num" id="kpi-csat">3.57</div>
+        <div class="pbi-kpi-label">Avg. Customer Rating</div>
+      </div>
+    </section>
+
+    <!-- Middle Row 1: Issue Bar + Priority Donut + Service Type Pie -->
+    <section class="pbi-visuals-row3">
+      <!-- Visual 1: Horizontal Bar Chart -->
+      <div class="pbi-visual-card">
+        <div class="pbi-visual-title" id="title-issues">Total Ticket by Issue Type</div>
+        <div class="pbi-chart-box" id="box-issues">
+          <canvas id="chartIssues"></canvas>
+        </div>
+      </div>
+
+      <!-- Visual 2: Donut Chart by Priority -->
+      <div class="pbi-visual-card">
+        <div class="pbi-visual-title" id="title-priority">Total Ticket by Priority</div>
+        <div class="pbi-chart-box" id="box-priority">
+          <canvas id="chartPriority"></canvas>
+        </div>
+      </div>
+
+      <!-- Visual 3: Pie Chart by Service Type -->
+      <div class="pbi-visual-card">
+        <div class="pbi-visual-title" id="title-tech">Total Ticket by Service Type</div>
+        <div class="pbi-chart-box" id="box-tech">
+          <canvas id="chartTechPie"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Middle Row 2: Region Radar + Status Polar Area -->
+    <section class="pbi-visuals-row2">
+      <!-- Visual 4: Radar Chart (Total Ticket by Region) -->
+      <div class="pbi-visual-card">
+        <div class="pbi-visual-title" id="title-region">Total Ticket by Region Zone</div>
+        <div class="pbi-chart-box" id="box-region">
+          <canvas id="chartRegion"></canvas>
+        </div>
+      </div>
+
+      <!-- Visual 5: Polar Area Chart (Total Ticket by Resolution Status) -->
+      <div class="pbi-visual-card">
+        <div class="pbi-visual-title" id="title-status">Total Ticket by Resolution Status</div>
+        <div class="pbi-chart-box" id="box-status">
+          <canvas id="chartStatus"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Wide Chart: Total Ticket by Month Name -->
+    <section class="pbi-visual-wide">
+      <div class="pbi-visual-title" id="title-monthly">Total Ticket by Month Name</div>
+      <div class="pbi-chart-box" id="box-monthly" style="min-height: 220px;">
+        <canvas id="chartMonthly"></canvas>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
