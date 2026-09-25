@@ -41,6 +41,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   Chart.defaults.font.weight = '700';
   Chart.defaults.color = '#334155';
 
+  // Rich 3D Interactive Tooltips & High Reactivity Hover Defaults
+  Chart.defaults.plugins.tooltip = {
+    enabled: true,
+    backgroundColor: 'rgba(15, 23, 42, 0.94)',
+    titleColor: '#ffffff',
+    titleFont: { size: 13, weight: '800' },
+    bodyColor: '#f8fafc',
+    bodyFont: { size: 12, weight: '700' },
+    padding: 12,
+    cornerRadius: 10,
+    boxPadding: 6,
+    usePointStyle: true,
+    displayColors: true,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1
+  };
+
   await loadDataset();
   applyFilters();
 });
@@ -126,12 +143,20 @@ function generateTelemetryData() {
 }
 
 function resetAllFilters() {
+  const btn = document.querySelector('.reset-filter-btn');
+  if (btn) {
+    btn.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    btn.style.transform = 'translateY(-50%) rotate(360deg) scale(1.12)';
+    setTimeout(() => { btn.style.transform = 'translateY(-50%) scale(1)'; }, 500);
+  }
+
   document.getElementById('slice-month').value = 'All';
   document.getElementById('slice-status').value = 'All';
   document.getElementById('slice-tech').value = 'All';
   document.getElementById('slice-region').value = 'All';
   document.getElementById('slice-priority').value = 'All';
   document.getElementById('slice-issue').value = 'All';
+
   applyFilters();
 }
 
@@ -185,16 +210,71 @@ function updateKPIs() {
   document.getElementById('kpi-csat').innerText = avgCSAT.toFixed(2);
 }
 
-// Robust chart renderer keeping existing canvas element intact with 3D pop animations
+// Robust chart renderer performing in-place dataset updates with slow 1.8s animations & rich tooltips
 function renderChart(chartKey, canvasId, type, data, options) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
-  const box = canvas.parentElement;
-  if (box && box.classList) {
-    box.classList.remove('chart-pop-3d');
-    void box.offsetWidth; // Trigger reflow for keyframe restart
-    box.classList.add('chart-pop-3d');
+  const defaultAnimOptions = {
+    animation: {
+      duration: 1800, // Cinematic slow 1.8s transition
+      easing: 'easeInOutCubic'
+    },
+    interaction: {
+      mode: 'nearest',
+      intersect: false
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: false
+    },
+    onHover: (evt, activeEls) => {
+      canvas.style.cursor = (activeEls && activeEls.length > 0) ? 'pointer' : 'default';
+    }
+  };
+
+  const defaultTooltipPlugin = {
+    tooltip: {
+      enabled: true,
+      mode: 'nearest',
+      intersect: false,
+      backgroundColor: 'rgba(15, 23, 42, 0.95)',
+      titleColor: '#38bdf8',
+      titleFont: { size: 13, weight: '800' },
+      bodyColor: '#ffffff',
+      bodyFont: { size: 12, weight: '700' },
+      padding: 12,
+      cornerRadius: 10,
+      borderColor: 'rgba(56, 189, 248, 0.5)',
+      borderWidth: 1.5,
+      displayColors: true,
+      callbacks: {
+        label: (context) => {
+          let label = context.dataset.label || context.label || '';
+          if (label) label += ': ';
+          let val = 0;
+          if (context.parsed && context.parsed.y !== undefined && context.parsed.y !== null) val = context.parsed.y;
+          else if (context.parsed && context.parsed.x !== undefined && context.parsed.x !== null) val = context.parsed.x;
+          else if (context.parsed && context.parsed.r !== undefined && context.parsed.r !== null) val = context.parsed.r;
+          else if (context.parsed && typeof context.parsed === 'number') val = context.parsed;
+          else if (context.raw !== undefined) val = context.raw;
+          return `${label}${Number(val).toLocaleString()} Tickets`;
+        }
+      }
+    }
+  };
+
+  const mergedOptions = Object.assign({}, defaultAnimOptions, options);
+  mergedOptions.plugins = Object.assign({}, defaultTooltipPlugin, options ? options.plugins : {});
+  mergedOptions.plugins.tooltip = Object.assign({}, defaultTooltipPlugin.tooltip, (options && options.plugins) ? options.plugins.tooltip : {});
+
+  // In-place smooth dataset update (Zero flashing, 1.8s slow morphing)
+  if (charts[chartKey] && charts[chartKey].config.type === type) {
+    charts[chartKey].data.labels = data.labels;
+    charts[chartKey].data.datasets = data.datasets;
+    charts[chartKey].options = mergedOptions;
+    charts[chartKey].update();
+    return;
   }
 
   if (charts[chartKey]) {
@@ -204,19 +284,6 @@ function renderChart(chartKey, canvasId, type, data, options) {
       console.warn(`Error destroying ${chartKey}:`, e);
     }
     charts[chartKey] = null;
-  }
-
-  // Inject 3D smooth transition animation default options
-  const defaultAnimOptions = {
-    animation: {
-      duration: 1050,
-      easing: 'easeInOutQuart'
-    }
-  };
-
-  const mergedOptions = Object.assign({}, defaultAnimOptions, options);
-  if (options && options.animation) {
-    mergedOptions.animation = Object.assign({}, defaultAnimOptions.animation, options.animation);
   }
 
   charts[chartKey] = new Chart(canvas, { type, data, options: mergedOptions });
@@ -268,7 +335,7 @@ function updateCharts() {
   const layoutPadding = { top: 16, right: 16, bottom: 8, left: 8 };
 
   // ==========================================
-  // 1. Visual 1: Issue Type Chart (BAR CHART FOR INDIVIDUAL)
+  // 1. Visual 1: Issue Type Chart — SIGNATURE 1: ELASTIC GROW ANIMATION
   // ==========================================
   const titleIssues = document.getElementById('title-issues');
   if (selectedIssue !== 'All') {
@@ -290,6 +357,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: layoutPadding },
+      animation: { duration: 1800, easing: 'easeInOutCubic' },
       plugins: {
         legend: { display: false },
         datalabels: getCartesianDataLabels('#0f172a', 'top', 'end')
@@ -323,6 +391,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: { top: 8, right: 36, bottom: 8, left: 8 } },
+      animation: { duration: 1800, easing: 'easeInOutCubic' },
       plugins: {
         legend: { display: false },
         datalabels: getCartesianDataLabels('#1e293b', 'end', 'end')
@@ -335,7 +404,7 @@ function updateCharts() {
   }
 
   // ==========================================
-  // 2. Visual 2: Priority Chart (BAR CHART FOR INDIVIDUAL)
+  // 2. Visual 2: Priority Chart — SIGNATURE 2: DONUT ROTATION & BOUNCE
   // ==========================================
   const titlePriority = document.getElementById('title-priority');
   if (selectedPriority !== 'All') {
@@ -357,6 +426,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: layoutPadding },
+      animation: { duration: 1000, easing: 'easeOutBack' },
       plugins: {
         legend: { display: false },
         datalabels: getCartesianDataLabels('#0f172a', 'top', 'end')
@@ -385,6 +455,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       cutout: '62%',
+      animation: { animateRotate: true, animateScale: true, duration: 1200, easing: 'easeOutBounce' },
       plugins: {
         legend: { position: 'right' },
         datalabels: getRadialDataLabels()
@@ -393,7 +464,7 @@ function updateCharts() {
   }
 
   // ==========================================
-  // 3. Visual 3: Service Type Chart (BAR CHART FOR INDIVIDUAL)
+  // 3. Visual 3: Service Type Chart — SIGNATURE 3: RADIAL EXPLOSION POP
   // ==========================================
   const titleTech = document.getElementById('title-tech');
   if (selectedTech !== 'All') {
@@ -416,6 +487,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: { top: 8, right: 36, bottom: 8, left: 8 } },
+      animation: { duration: 1000, easing: 'easeOutQuart' },
       plugins: {
         legend: { display: false },
         datalabels: getCartesianDataLabels('#1e293b', 'end', 'end')
@@ -443,6 +515,7 @@ function updateCharts() {
     }, {
       responsive: true,
       maintainAspectRatio: false,
+      animation: { animateRotate: true, animateScale: true, duration: 1100, easing: 'easeOutBack' },
       plugins: {
         legend: { position: 'right' },
         datalabels: getRadialDataLabels()
@@ -451,7 +524,7 @@ function updateCharts() {
   }
 
   // ==========================================
-  // 4. Visual 4: Region Zone Chart (BAR CHART FOR INDIVIDUAL ZONE)
+  // 4. Visual 4: Region Zone Chart — SIGNATURE 4: RADAR SWEEP ANIMATION
   // ==========================================
   const titleRegion = document.getElementById('title-region');
   if (selectedRegion !== 'All') {
@@ -473,6 +546,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: layoutPadding },
+      animation: { duration: 1100, easing: 'easeOutBounce' },
       plugins: {
         legend: { display: false },
         datalabels: getCartesianDataLabels('#0f172a', 'top', 'end')
@@ -497,20 +571,26 @@ function updateCharts() {
         borderColor: '#8b5cf6',
         pointBackgroundColor: '#06b6d4',
         pointBorderColor: '#ffffff',
-        borderWidth: 2.5
+        borderWidth: 2.5,
+        pointRadius: 6,
+        pointHoverRadius: 9
       }]
     }, {
       responsive: true,
       maintainAspectRatio: false,
+      animation: { duration: 1200, easing: 'easeInOutCirc' },
       plugins: {
         legend: { display: false },
         datalabels: {
           display: true,
-          color: '#1e293b',
-          anchor: 'end',
-          align: 'top',
+          color: '#ffffff',
+          backgroundColor: '#7c3aed',
+          borderRadius: 6,
+          padding: { top: 3, bottom: 3, left: 6, right: 6 },
+          anchor: 'start',
+          align: 'start',
           offset: 4,
-          font: { weight: '800', size: 11 },
+          font: { weight: '800', size: 10 },
           formatter: (val) => {
             const num = Number(val);
             return (!isNaN(num) && num > 0) ? num.toLocaleString() : '';
@@ -520,16 +600,21 @@ function updateCharts() {
       scales: {
         r: {
           beginAtZero: true,
+          ticks: { display: false },
           grid: { color: 'rgba(0,0,0,0.06)' },
           angleLines: { color: 'rgba(0,0,0,0.1)' },
-          pointLabels: { font: { size: 11, weight: '700' }, color: '#475569' }
+          pointLabels: {
+            font: { size: 12, weight: '800' },
+            color: '#1e293b',
+            padding: 16
+          }
         }
       }
     });
   }
 
   // ==========================================
-  // 5. Visual 5: Status Chart (BAR CHART FOR INDIVIDUAL STATUS)
+  // 5. Visual 5: Status Chart — SIGNATURE 5: POLAR SECTOR FLARE
   // ==========================================
   const titleStatus = document.getElementById('title-status');
   if (selectedStatus !== 'All') {
@@ -551,6 +636,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: layoutPadding },
+      animation: { duration: 1000, easing: 'easeOutElastic' },
       plugins: {
         legend: { display: false },
         datalabels: getCartesianDataLabels('#0f172a', 'top', 'end')
@@ -576,6 +662,7 @@ function updateCharts() {
     }, {
       responsive: true,
       maintainAspectRatio: false,
+      animation: { animateRotate: true, animateScale: true, duration: 1000, easing: 'easeOutQuart' },
       plugins: {
         legend: { position: 'right' },
         datalabels: getRadialDataLabels()
@@ -591,7 +678,7 @@ function updateCharts() {
   }
 
   // ==========================================
-  // 6. Visual 6: Monthly Chart (BAR CHART FOR INDIVIDUAL MONTH)
+  // 6. Visual 6: Monthly Chart — SIGNATURE 6: PROGRESSIVE WAVE PATH DRAW
   // ==========================================
   const titleMonthly = document.getElementById('title-monthly');
   if (selectedMonth !== 'All') {
@@ -616,6 +703,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: layoutPadding },
+      animation: { duration: 1000, easing: 'easeOutBounce' },
       plugins: {
         legend: { display: false },
         datalabels: getCartesianDataLabels('#0f172a', 'top', 'end')
@@ -652,6 +740,7 @@ function updateCharts() {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: layoutPadding },
+      animation: { duration: 1300, easing: 'easeInOutCubic' },
       plugins: {
         legend: { display: false },
         datalabels: getCartesianDataLabels('#0284c7', 'top', 'end')

@@ -16,22 +16,25 @@
 
     <!-- Header Banner -->
     <header class="pbi-header-banner">
-      <h1>Telecommunications Dashboard in Power BI</h1>
+      <div class="pbi-header-title-box">
+        <h1>Telecommunications Executive Dashboard</h1>
+        <span class="pbi-header-badge">⚡ Real-Time Network & Operations Intelligence</span>
+      </div>
       <button class="reset-filter-btn" onclick="resetAllFilters()">🔄 Reset Filters</button>
     </header>
 
     <!-- Distinct Service Color Legend Bar -->
     <div class="service-legend-bar">
-      <div class="legend-item"><span class="legend-dot broadband"></span> Broadband</div>
-      <div class="legend-item"><span class="legend-dot mobile"></span> Mobile</div>
-      <div class="legend-item"><span class="legend-dot tv"></span> TV</div>
-      <div class="legend-item"><span class="legend-dot landline"></span> Landline</div>
+      <div class="legend-item"><span class="legend-dot broadband"></span> 📡 Broadband</div>
+      <div class="legend-item"><span class="legend-dot mobile"></span> 📱 Mobile 5G</div>
+      <div class="legend-item"><span class="legend-dot tv"></span> 📺 Smart TV</div>
+      <div class="legend-item"><span class="legend-dot landline"></span> 📞 Fiber Landline</div>
     </div>
 
     <!-- Top Slicers Bar -->
     <section class="pbi-slicers-bar">
       <div class="pbi-slicer">
-        <div class="pbi-slicer-header slicer-blue">Month Name</div>
+        <div class="pbi-slicer-header slicer-blue">📅 Month Name</div>
         <select id="slice-month" onchange="applyFilters()">
           <option value="All">All</option>
           <option value="Jan">Jan</option>
@@ -50,7 +53,7 @@
       </div>
 
       <div class="pbi-slicer">
-        <div class="pbi-slicer-header slicer-green">Status</div>
+        <div class="pbi-slicer-header slicer-green">🚦 Status</div>
         <select id="slice-status" onchange="applyFilters()">
           <option value="All">All</option>
           <option value="Resolved">Resolved</option>
@@ -61,7 +64,7 @@
       </div>
 
       <div class="pbi-slicer">
-        <div class="pbi-slicer-header slicer-purple">Service Type</div>
+        <div class="pbi-slicer-header slicer-purple">📡 Service Type</div>
         <select id="slice-tech" onchange="applyFilters()">
           <option value="All">All</option>
           <option value="Broadband">Broadband</option>
@@ -72,7 +75,7 @@
       </div>
 
       <div class="pbi-slicer">
-        <div class="pbi-slicer-header slicer-orange">Region</div>
+        <div class="pbi-slicer-header slicer-orange">🌍 Region</div>
         <select id="slice-region" onchange="applyFilters()">
           <option value="All">All</option>
           <option value="North Zone">North Zone</option>
@@ -84,7 +87,7 @@
       </div>
 
       <div class="pbi-slicer">
-        <div class="pbi-slicer-header slicer-pink">Priority</div>
+        <div class="pbi-slicer-header slicer-pink">⚡ Priority</div>
         <select id="slice-priority" onchange="applyFilters()">
           <option value="All">All</option>
           <option value="High">High</option>
@@ -94,7 +97,7 @@
       </div>
 
       <div class="pbi-slicer">
-        <div class="pbi-slicer-header slicer-cyan">Issue Type</div>
+        <div class="pbi-slicer-header slicer-cyan">🔧 Issue Type</div>
         <select id="slice-issue" onchange="applyFilters()">
           <option value="All">All</option>
           <option value="Slow Internet">Slow Internet</option>
@@ -111,22 +114,26 @@
     <section class="pbi-kpi-grid">
       <div class="pbi-kpi-card broadband">
         <div class="pbi-kpi-num" id="kpi-total">5,000</div>
-        <div class="pbi-kpi-label">Total Ticket</div>
+        <div class="pbi-kpi-label">Total Ticket Volume</div>
+        <div class="pbi-kpi-subtext">▲ 100% Operational Telemetry</div>
       </div>
 
       <div class="pbi-kpi-card mobile">
         <div class="pbi-kpi-num" id="kpi-resp">12.48</div>
-        <div class="pbi-kpi-label">Average Response Time (hrs)</div>
+        <div class="pbi-kpi-label">Avg. Response Time (hrs)</div>
+        <div class="pbi-kpi-subtext">⏱ Target < 15.0 hrs Baseline</div>
       </div>
 
       <div class="pbi-kpi-card tv">
         <div class="pbi-kpi-num" id="kpi-resol">47.60</div>
-        <div class="pbi-kpi-label">Average Resolution Time (hrs)</div>
+        <div class="pbi-kpi-label">Avg. Resolution Time (hrs)</div>
+        <div class="pbi-kpi-subtext">📉 73.9% Within SLA Target</div>
       </div>
 
       <div class="pbi-kpi-card landline">
         <div class="pbi-kpi-num" id="kpi-csat">3.57</div>
         <div class="pbi-kpi-label">Avg. Customer Rating</div>
+        <div class="pbi-kpi-subtext">★ CSAT Benchmark (1.0–5.0)</div>
       </div>
     </section>
 

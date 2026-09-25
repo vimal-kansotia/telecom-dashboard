@@ -52,40 +52,76 @@ body {
 
 /* Header Banner - Rich Electric Gradient */
 .pbi-header-banner {
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #06b6d4 100%);
-  border-radius: 20px;
-  padding: 18px 28px;
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 35%, #7c3aed 70%, #06b6d4 100%);
+  border-radius: 22px;
+  padding: 20px 28px;
   text-align: center;
   color: #ffffff;
-  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.3);
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.pbi-header-banner::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.pbi-header-title-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
 .pbi-header-banner h1 {
-  font-size: 1.55rem;
+  font-size: 1.65rem;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pbi-header-badge {
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  padding: 3px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.02em;
 }
 
 .reset-filter-btn {
   position: absolute;
-  right: 20px;
+  right: 22px;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   color: white;
-  padding: 7px 16px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 24px;
+  font-size: 0.82rem;
+  font-weight: 800;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .reset-filter-btn:hover {
-  background: rgba(255, 255, 255, 0.4);
-  transform: translateY(-50%) scale(1.05);
+  background: rgba(255, 255, 255, 0.45);
+  transform: translateY(-50%) scale(1.06);
 }
 
 /* Service Type Legend Bar Callout */
@@ -226,6 +262,18 @@ body {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.pbi-kpi-subtext {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-top: 4px;
 }
 
 /* Visuals Grids */
@@ -249,14 +297,12 @@ body {
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06), 0 2px 6px rgba(15, 23, 42, 0.04);
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, border-color 0.3s ease;
-  perspective: 1000px;
-  transform-style: preserve-3d;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .pbi-visual-card:hover {
-  transform: translateY(-6px) scale(1.015) rotateX(1.5deg);
-  box-shadow: 0 20px 35px rgba(37, 99, 235, 0.12), 0 8px 15px rgba(139, 92, 246, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(37, 99, 235, 0.1), 0 6px 14px rgba(139, 92, 246, 0.06);
   border-color: rgba(37, 99, 235, 0.3);
 }
 
@@ -276,16 +322,6 @@ body {
   height: 270px;
   min-height: 270px;
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.pbi-chart-box.chart-pop-3d {
-  animation: pop3D 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes pop3D {
-  0% { transform: scale(0.92) translateZ(-20px); opacity: 0.7; }
-  60% { transform: scale(1.04) translateZ(10px); opacity: 1; }
-  100% { transform: scale(1) translateZ(0); opacity: 1; }
 }
 
 .pbi-chart-box canvas {
